@@ -113,10 +113,11 @@ public class MarkWeek01{
 		double myDouble = 1.09;
 		boolean myBoolean = true;
 		char myChar = 'G';
-		int[] myIntArray = {1, 9, 10, 29, 1995, 1996};
 		
 		MarkWeek01 MD = new MarkWeek01();
 		System.out.println("Getting all primitive data type values...");
+		
+		//Using all the get methods
 		MD.getMyInt(myInt);
 		MD.getMyByte(myByte);
 		MD.getMyShort(myShort);
