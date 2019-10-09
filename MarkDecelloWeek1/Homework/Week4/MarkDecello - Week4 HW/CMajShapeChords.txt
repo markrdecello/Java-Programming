@@ -1,0 +1,14 @@
+Fret;	 Notes;		Chord
+0;	C, E, G ;	C
+1;	C#,F, G#;	C#
+2;	D, F#,A ;	D
+3;	D#,G, A#;	D#
+4;	E, G#,B ;	E
+5;	F, A, C ;	F
+6;	F#,A#,C#;	F#
+7;	G, B, D ;	G
+8;	G#,C, D#;	G#
+9;	A, C#,E ;	A
+10;	A#,D, F ;	A#
+11;	B, D#,F#;	B
+12;	C, E, G ;	C
