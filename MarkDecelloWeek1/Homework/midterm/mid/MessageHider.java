@@ -66,7 +66,7 @@ public class MessageHider{
 		int bitsPrinted = 0;
 		for(int row = 0; row <imageArray.length; row++){
 			for(int col = 0; col < imageArray[row].length; ++col){
-				imageArray[row][col] &=0xFFFEFFFF; // set the last red bit to zero
+				imageArray[row][col] &=0xFFFFFFFE; // set the last red bit to zero
 				int bitToHide = getBit(bitIndex, toHide);
 				if(bitToHide != 0x02){
 					System.out.print(bitToHide);
@@ -76,8 +76,13 @@ public class MessageHider{
 						bitsPrinted = 0;
 					}
 				}
-				imageArray[row][col] |= bitToHide;
-				bitIndex++;
+				if(imageArray[row][col] == 0x00000000){
+					//imageArray[row][col] = 0x00000000;
+				}else{
+					imageArray[row][col] |= bitToHide;
+					bitIndex++;
+				}
+				//bitIndex++;
 			}
 		}
 		System.out.println("");
