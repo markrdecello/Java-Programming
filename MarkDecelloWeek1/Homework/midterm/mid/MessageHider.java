@@ -35,8 +35,8 @@ public class MessageHider{
 			return ErrorReturnValue;
 		}
 
-		final int Width = Integer.parseInt(dimensionStrings[0]);
-		final int Height = Integer.parseInt(dimensionStrings[1]);
+		final int Width = Integer.parseInt(dimensionStrings[0]); //Width = 4
+		final int Height = Integer.parseInt(dimensionStrings[1]); //Height = 4
 		int[][] ret = new int[Height][Width*CHANNELS_PER_PIXEL];
 		System.out.println(String.format("Read a %dx%d image", Width, Height));
 		if(stringArray.length != Height + 3){
@@ -48,7 +48,7 @@ public class MessageHider{
 		final int MaxValue = Integer.parseInt(maxValueString);
 
 		for(int lineIndex = 3; lineIndex < stringArray.length; lineIndex++){
-			String[] numbers = stringArray[lineIndex].split("\\s+");
+			String[] numbers = stringArray[lineIndex].split("\\s+"); //Splits whitespace
 			if(numbers.length != Width * CHANNELS_PER_PIXEL){
 				System.err.println(String.format("Found invalid number of pixels in row %d of PPM image", lineIndex));
 				return ErrorReturnValue;
@@ -66,23 +66,28 @@ public class MessageHider{
 		int bitsPrinted = 0;
 		for(int row = 0; row <imageArray.length; row++){
 			for(int col = 0; col < imageArray[row].length; ++col){
-				imageArray[row][col] &=0xFFFFFFFE; // set the last red bit to zero
-				int bitToHide = getBit(bitIndex, toHide);
-				if(bitToHide != 0x02){
-					System.out.print(bitToHide);
-					bitsPrinted++;
-					if(bitsPrinted == 8){
-						System.out.print(" ");
-						bitsPrinted = 0;
+				int red = col % 3;
+				if(red == 0){  
+					imageArray[row][col] &=0xFFFFFFFE; // set the last red bit to zeroi
+					int bitToHide = getBit(bitIndex, toHide);
+					if(bitToHide != 0x02){
+						System.out.print(bitToHide);
+						bitsPrinted++;
+						if(bitsPrinted == 8){
+							System.out.print(" ");
+							bitsPrinted = 0;
+						}
 					}
-				}
-				if(imageArray[row][col] == 0x00000000){
+				/*if((imageArray[row][col] & 0xFFFEFFFF) == 0xFFFEFFFF){
 					//imageArray[row][col] = 0x00000000;
 				}else{
 					imageArray[row][col] |= bitToHide;
 					bitIndex++;
+				}*/
+					imageArray[row][col] |= bitToHide;
+				//imageArray[row][col] >>= 1;
+					bitIndex++;
 				}
-				//bitIndex++;
 			}
 		}
 		System.out.println("");
@@ -112,6 +117,7 @@ public class MessageHider{
 				}
 			}
 		}
+		System.out.println(imageArray.length);
 	}
 
 	public static void WritePPMFile(int[][] Pixels, String fileName) throws IOException, FileNotFoundException{
