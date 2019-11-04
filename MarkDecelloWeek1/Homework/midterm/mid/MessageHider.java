@@ -9,6 +9,13 @@ public class MessageHider{
 
 	private final static int CHANNELS_PER_PIXEL = 3;
 
+	/*
+	 * This method reads the ppm file to create a 2d int array
+	 *Uses the filename passed by Exam.java file/class
+	 *Reads the .ppm file
+	 *ignores the first three lines
+	 *Then converts into a 2D int array and returns it
+	 */
 	public static int[][] ReadPPMIntoIntArray(String fileName) throws FileNotFoundException, IOException{
 		final int[][] ErrorReturnValue = null;
 
@@ -28,8 +35,8 @@ public class MessageHider{
 			return ErrorReturnValue;
 		}
 
-		String dimensionString = stringArray[1];
-		String[] dimensionStrings = dimensionString.split("\\s+");
+		String dimensionString = stringArray[1]; // equal to 4 4
+		String[] dimensionStrings = dimensionString.split("\\s+");//split white space [0]=4 [1]=4
 		if(dimensionStrings.length != 2){
 			System.err.println("Invalid dimension specified.");
 			return ErrorReturnValue;
@@ -37,23 +44,25 @@ public class MessageHider{
 
 		final int Width = Integer.parseInt(dimensionStrings[0]); //Width = 4
 		final int Height = Integer.parseInt(dimensionStrings[1]); //Height = 4
-		int[][] ret = new int[Height][Width*CHANNELS_PER_PIXEL];
+		int[][] ret = new int[Height][Width*CHANNELS_PER_PIXEL];//create 2d int array [4][12]
 		System.out.println(String.format("Read a %dx%d image", Width, Height));
 		if(stringArray.length != Height + 3){
 			System.err.println("Not enough rows in datafile.");
 			return ErrorReturnValue;
 		}
 
-		String maxValueString = stringArray[2];
+		String maxValueString = stringArray[2];// equal to 255
 		final int MaxValue = Integer.parseInt(maxValueString);
 
+		//start at stringArray[3]
 		for(int lineIndex = 3; lineIndex < stringArray.length; lineIndex++){
 			String[] numbers = stringArray[lineIndex].split("\\s+"); //Splits whitespace
-			if(numbers.length != Width * CHANNELS_PER_PIXEL){
+			if(numbers.length != Width * CHANNELS_PER_PIXEL){// has to equal 12 or else error
 				System.err.println(String.format("Found invalid number of pixels in row %d of PPM image", lineIndex));
 				return ErrorReturnValue;
 			}else{
 				for(int numberIndex = 0; numberIndex < numbers.length; ++numberIndex){
+					//puts the rgb values from the ppm file into 2d int array
 					ret[lineIndex - 3][numberIndex] = Integer.parseInt(numbers[numberIndex]);
 				}
 			}
@@ -61,15 +70,22 @@ public class MessageHider{
 		return ret;
 	}
 
+	/*
+	 *This method hides the message that the user provided when running the program
+	 *Takes 2 parameters; a byte array and a 2d int array
+	 *The byte arrray is the message that the user wants to hide
+	 *The method Reads the 2d int Array and changes the value of only the red pixel channel
+	 *The 2d int array will now have a hidden message only on the red pixels
+	 */
 	public static void hideMessage(byte[] toHide, int[][] imageArray){
 		int bitIndex = 0;
 		int bitsPrinted = 0;
 		for(int row = 0; row <imageArray.length; row++){
 			for(int col = 0; col < imageArray[row].length; ++col){
-				int red = col % 3;
+				int red = col % 3; // since the red pixel is located when it's divisible by 3
 				if(red == 0){  
-					imageArray[row][col] &=0xFFFFFFFE; // set the last red bit to zeroi
-					int bitToHide = getBit(bitIndex, toHide);
+					imageArray[row][col] &=0xFE; // set the last red bit to zero
+					int bitToHide = getBit(bitIndex, toHide); //use getBit method
 					if(bitToHide != 0x02){
 						System.out.print(bitToHide);
 						bitsPrinted++;
@@ -78,14 +94,7 @@ public class MessageHider{
 							bitsPrinted = 0;
 						}
 					}
-				/*if((imageArray[row][col] & 0xFFFEFFFF) == 0xFFFEFFFF){
-					//imageArray[row][col] = 0x00000000;
-				}else{
 					imageArray[row][col] |= bitToHide;
-					bitIndex++;
-				}*/
-					imageArray[row][col] |= bitToHide;
-				//imageArray[row][col] >>= 1;
 					bitIndex++;
 				}
 			}
@@ -93,6 +102,10 @@ public class MessageHider{
 		System.out.println("");
 	}
 
+	/*
+	 *This method will get the bits of the message that is hidden
+	 *Once bitIndex is 8 it will create a space(using hideMessage method) and return the next 8 bits 
+	 */
 	private static int getBit(int bitIndex, byte[] toHide){
 		int byteIndex = bitIndex / 8;
 		if(byteIndex >= toHide.length){
@@ -109,25 +122,30 @@ public class MessageHider{
 		int numBits = 8 * numBytesInMessage;
 		for(int row = 0; row < imageArray.length; row++){
 			for(int col = 0; col < imageArray.length; col++){
-				if(row * imageArray[row].length + col == numBits){
+				if(row * imageArray.length + col + 1  == numBits){
+					System.out.println(String.format("0x%08X", (0x00000001 & imageArray[row][col*3])));
 					System.out.println("Did these bits agree with the bits we set when we hid the message?");
 					return;
 				}else{
-					System.out.println(String.format("0x%08X", (0x00000001 & imageArray[row][col])));
+					System.out.println(String.format("0x%08X", (0x00000001 & imageArray[row][col*3])));
 				}
 			}
 		}
-		System.out.println(imageArray.length);
 	}
 
+	/*
+	 *This method takes the new values and writes it into a new file
+	 *Takes 2 parameters; Pixells and filename
+	 *Writes the values of the 2d int array to the output filename given by user
+	 */
 	public static void WritePPMFile(int[][] Pixels, String fileName) throws IOException, FileNotFoundException{
 		OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(new File(fileName), true), Charset.forName("UTF-8"));
 
 		osw.write("P3\n");
 		osw.write(String.format("%d %d\n", Pixels[0].length/3, Pixels.length));
 		osw.write("255\n");
-		System.out.println(Pixels.length);
-		System.out.println(Pixels[0].length);
+		System.out.println(Pixels.length);// equal to 4
+		System.out.println(Pixels[0].length);// equal to 12
 		
 		for(int row = 0; row < Pixels.length; ++row){
 			System.out.println(row + " " + Pixels[0].length);
